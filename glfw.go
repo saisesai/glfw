@@ -5,6 +5,8 @@ package glfw
 */
 import "C"
 
+/*======================= GLFW API tokens =====================*/
+
 // Version
 const (
 	VersionMajor    int = C.GLFW_VERSION_MAJOR
@@ -337,13 +339,13 @@ const (
 	OpenglCompatProfile = C.GLFW_OPENGL_COMPAT_PROFILE
 )
 
-// Inputs
+// Inputs Mode
 const (
-	Cursor             = C.GLFW_CURSOR
-	StickyKeys         = C.GLFW_STICKY_KEYS
-	StickyMouseButtons = C.GLFW_STICKY_MOUSE_BUTTONS
-	LockKeyMods        = C.GLFW_LOCK_KEY_MODS
-	RawMouseMotion     = C.GLFW_RAW_MOUSE_MOTION
+	ModeCursor             = C.GLFW_CURSOR
+	ModeStickyKeys         = C.GLFW_STICKY_KEYS
+	ModeStickyMouseButtons = C.GLFW_STICKY_MOUSE_BUTTONS
+	ModeLockKeyMods        = C.GLFW_LOCK_KEY_MODS
+	ModeRawMouseMotion     = C.GLFW_RAW_MOUSE_MOTION
 )
 
 // Cursor state
@@ -393,3 +395,141 @@ const (
 const (
 	DontCare = C.GLFW_DONT_CARE
 )
+
+/*===================== GLFW API types =======================*/
+
+// GLProc
+//Client API function pointer type.
+type GLProc func()
+
+// VkProc
+// Vulkan API function pointer type.
+type VkProc func()
+
+// Monitor
+// Opaque monitor object.
+type Monitor uintptr
+
+// Window
+// Opaque window object.
+type Window uintptr
+
+// Cursor
+// Opaque cursor object.
+type Cursor uintptr
+
+// ErrorFunc
+// The function pointer type for error callbacks.
+type ErrorFunc func(pErrorCode int, pDescription string)
+
+// WindowPosFunc
+// The function pointer type for window position callbacks.
+type WindowPosFunc func(pWindow *Window, pXPos, pYPos int)
+
+// WindowSizeFunc
+// The function pointer type for window size callbacks.
+type WindowSizeFunc func(pWindow *Window, pWidth, pHeight int)
+
+// WindowCloseFunc
+// The function pointer type for window close callbacks.
+type WindowCloseFunc func(pWindow *Window)
+
+// WindowRefreshFunc
+// The function pointer type for window content refresh callbacks.
+type WindowRefreshFunc func(pWindow *Window)
+
+// WindowFocusFunc
+// The function pointer type for window focus callbacks.
+type WindowFocusFunc func(pWindow *Window, pIsFocused bool)
+
+// WindowIconifyFunc
+// The function pointer type for window iconify callbacks.
+type WindowIconifyFunc func(pWindow *Window, pIsIconified bool)
+
+// WindowMaximizeFunc
+// The function pointer type for window maximize callbacks.
+type WindowMaximizeFunc func(pWindow *Window, pIsMaximized bool)
+
+// FrameBufferSizeFunc
+// The function pointer type for framebuffer size callbacks.
+type FrameBufferSizeFunc func(pWindow *Window, pWidth, pHeight int)
+
+// WindowContentScaleFunc
+// The function pointer type for window content scale callbacks.
+type WindowContentScaleFunc func(pWindow *Window, pXScale, pYScale float32)
+
+// MouseButtonFunc
+// The function pointer type for mouse button callbacks.
+type MouseButtonFunc func(pWindow *Window, pButton, pAction, pMods int)
+
+// CursorPosFunc
+// The function pointer type for cursor position callbacks.
+type CursorPosFunc func(pWindow *Window, pXPos, pYPos float64)
+
+// CursorEnterFunc
+// The function pointer type for cursor enter/leave callbacks.
+type CursorEnterFunc func(pWindow *Window, pEntered bool)
+
+// ScrollFunc
+// The function pointer type for scroll callbacks.
+type ScrollFunc func(pWindow *Window, pXOffset, pYOffset float64)
+
+// KeyFunc
+// The function pointer type for keyboard key callbacks.
+type KeyFunc func(pWindow *Window, pKey, pScanCode, pAction, pMods int)
+
+// CharFunc
+// The function pointer type for Unicode character callbacks.
+type CharFunc func(pWindow *Window, pCodePoint uint32)
+
+// CharModsFunc
+// The function pointer type for Unicode character with modifiers
+type CharModsFunc func(pWindow *Window, pCodePoint uint32, pMods int)
+
+// DropFunc
+// The function pointer type for path drop callbacks.
+type DropFunc func(pWindow *Window, pPathCount int, pPaths []string)
+
+// MonitorFunc
+// The function pointer type for monitor configuration callbacks.
+type MonitorFunc func(pMonitor *Monitor, pEvent int)
+
+// JoystickFunc
+// The function pointer type for joystick configuration callbacks.
+type JoystickFunc func(pJId, pEvent int)
+
+// VIMode
+// This describes a single video mode.
+type VIMode struct {
+	Width       int // The width, in screen coordinates, of the video mode.
+	Height      int // The height, in screen coordinates, of the video mode.
+	RedBits     int // The bit depth of the red channel of the video mode.
+	GreenBits   int // The bit depth of the green channel of the video mode.
+	BlueBits    int // The bit depth of the blue channel of the video mode.
+	RefreshRate int // The refresh rate, in Hz, of the video mode.
+}
+
+// GammaRamp
+// This describes the gamma ramp for a monitor.
+type GammaRamp struct {
+	Red   []uint16 // An array of value describing the response of the red channel.
+	Green []uint16 // An array of value describing the response of the green channel.
+	Blue  []uint16 // An array of value describing the response of the blue channel.
+	Size  uint     // The number of elements in each array.
+}
+
+// Image
+// This describes a single 2D image.
+// See the documentation for each related function what the expected pixel format is.
+type Image struct {
+	Width  int    // The width, in pixels, of this image.
+	Height int    // The height, in pixels, of this image.
+	Pixels []byte // The pixel data of this image, arranged left-to-right, top-to-bottom.
+}
+
+// GamePadState
+// This describes the input state of a gamepad.
+type GamePadState struct {
+	Buttons [15]uint8  // The states of each gamepad button.
+	Axes    [6]float32 // The states of each gamepad axis
+}
