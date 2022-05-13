@@ -2,8 +2,16 @@ package glfw
 
 /*
 #include <GLFW/glfw3.h>
+
+typedef const char cchar;
+
+extern void glfwErrorCallback(int, cchar*);
 */
 import "C"
+import (
+	"errors"
+	"unsafe"
+)
 
 /*======================= GLFW API tokens =====================*/
 
@@ -532,4 +540,139 @@ type Image struct {
 type GamePadState struct {
 	Buttons [15]uint8  // The states of each gamepad button.
 	Axes    [6]float32 // The states of each gamepad axis
+}
+
+/*=================== GLFW API functions =====================*/
+
+// Init
+// This function must only be called from the main thread.
+func Init() error {
+	C.glfwInit()
+	return GetError()
+}
+
+// Terminate
+// This function must only be called from the main thread.
+func Terminate() error {
+	C.glfwTerminate()
+	return GetError()
+}
+
+// InitHint
+// Sets the specified init hint to the desired value.
+// This function must only be called from the main thread.
+func InitHint(pHint, pValue int) {
+	C.glfwInitHint(C.int(pHint), C.int(pValue))
+}
+
+// GetVersion
+// Retrieves the version of the GLFW library.
+func GetVersion() (int, int, int) {
+	var major, minor, rev C.int
+	C.glfwGetVersion(&major, &minor, &rev)
+	return int(major), int(minor), int(rev)
+}
+
+// GetVersionString
+// Returns a string describing the compile-time configuration.
+func GetVersionString() string {
+	return C.GoString(C.glfwGetVersionString())
+}
+
+// GetError
+// Returns and clears the last error for the calling thread.
+func GetError() error {
+	var descPtr = C.NULL
+	C.glfwGetError((**C.cchar)(unsafe.Pointer(&descPtr)))
+	if descPtr != C.NULL {
+		return errors.New(C.GoString((*C.cchar)(descPtr)))
+	}
+	return nil
+}
+
+var errorFuncInstance ErrorFunc = nil
+
+//export glfwErrorCallback
+func glfwErrorCallback(pCode C.int, pDesc *C.cchar) {
+	errorFuncInstance(int(pCode), C.GoString(pDesc))
+}
+
+// SetErrorCallback
+// Sets the error callback.
+// This function must only be called from the main thread.
+func SetErrorCallback(pErrorFunc ErrorFunc) {
+	errorFuncInstance = pErrorFunc
+	C.glfwSetErrorCallback(C.GLFWerrorfun(C.glfwErrorCallback))
+}
+
+// GetMonitors
+// Returns the currently connected monitors.
+// This function must only be called from the main thread.
+func GetMonitors() []*Monitor {
+	var count C.int
+	monitorArray := (*[1 << 30]*C.GLFWmonitor)(unsafe.Pointer(C.glfwGetMonitors(&count)))
+	var monitors []*Monitor
+	for i := 0; i < int(count); i++ {
+		monitors = append(monitors, (*Monitor)(unsafe.Pointer(monitorArray[i])))
+	}
+	return monitors
+}
+
+// GetPrimaryMonitor
+// Returns the primary monitor.
+// This function must only be called from the main thread.
+func GetPrimaryMonitor() *Monitor {
+	return (*Monitor)(unsafe.Pointer(C.glfwGetPrimaryMonitor()))
+}
+
+// GetMonitorPos
+// Returns the position of the monitor's viewport on the virtual screen.
+// This function must only be called from the main thread.
+func GetMonitorPos(pMonitor *Monitor) (int, int) {
+	var xPos, yPos C.int
+	C.glfwGetMonitorPos((*C.GLFWmonitor)(unsafe.Pointer(pMonitor)), &xPos, &yPos)
+	return int(xPos), int(yPos)
+}
+
+// GetMonitorWorkArea
+// Retrieves the work area of the monitor.
+// This function must only be called from the main thread.
+func GetMonitorWorkArea(pMonitor *Monitor) (int, int, int, int) {
+	var xPos, yPos, width, height C.int
+	C.glfwGetMonitorWorkarea(
+		(*C.GLFWmonitor)(unsafe.Pointer(pMonitor)),
+		&xPos, &yPos, &width, &height,
+	)
+	return int(xPos), int(yPos), int(width), int(height)
+}
+
+// GetMonitorPhysicalSize
+// Returns the physical size of the monitor.
+// This function must only be called from the main thread.
+func GetMonitorPhysicalSize(pMonitor *Monitor) (int, int) {
+	var width, height C.int
+	C.glfwGetMonitorPhysicalSize(
+		(*C.GLFWmonitor)(unsafe.Pointer(pMonitor)),
+		&width, &height,
+	)
+	return int(width), int(height)
+}
+
+// GetMonitorContentScale
+// Retrieves the content scale for the specified monitor.
+// This function must only be called from the main thread.
+func GetMonitorContentScale(pMonitor *Monitor) (float32, float32) {
+	var xScale, yScale C.float
+	C.glfwGetMonitorContentScale(
+		(*C.GLFWmonitor)(unsafe.Pointer(pMonitor)),
+		&xScale, &yScale,
+	)
+	return float32(xScale), float32(yScale)
+}
+
+// GetMonitorName
+// Returns the name of the specified monitor.
+// This function must only be called from the main thread.
+func GetMonitorName(pMonitor *Monitor) string {
+	return C.GoString(C.glfwGetMonitorName((*C.GLFWmonitor)(unsafe.Pointer(pMonitor))))
 }
