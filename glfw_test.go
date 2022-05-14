@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"runtime"
 	"testing"
+	"time"
 	"unsafe"
 )
 
@@ -39,7 +40,10 @@ func TestGetMonitors(t *testing.T) {
 		panic(err)
 	}
 
-	monitors := GetMonitors()
+	monitors, err := GetMonitors()
+	if err != nil {
+		panic(err)
+	}
 	for _, m := range monitors {
 		fmt.Println(m)
 	}
@@ -59,7 +63,10 @@ func TestGetMonitorPos(t *testing.T) {
 		panic(err)
 	}
 
-	m := GetPrimaryMonitor()
+	m, err := GetPrimaryMonitor()
+	if err != nil {
+		panic(err)
+	}
 	fmt.Println(GetMonitorPos(m))
 
 	err = Terminate()
@@ -75,7 +82,10 @@ func TestGetMonitorWorkArea(t *testing.T) {
 		panic(err)
 	}
 
-	m := GetPrimaryMonitor()
+	m, err := GetPrimaryMonitor()
+	if err != nil {
+		panic(err)
+	}
 	fmt.Println(GetMonitorWorkArea(m))
 
 	err = Terminate()
@@ -91,7 +101,10 @@ func TestGetMonitorPhysicalSize(t *testing.T) {
 		panic(err)
 	}
 
-	m := GetPrimaryMonitor()
+	m, err := GetPrimaryMonitor()
+	if err != nil {
+		panic(err)
+	}
 	fmt.Println(GetMonitorPhysicalSize(m))
 
 	err = Terminate()
@@ -107,7 +120,10 @@ func TestGetMonitorContentScale(t *testing.T) {
 		panic(err)
 	}
 
-	m := GetPrimaryMonitor()
+	m, err := GetPrimaryMonitor()
+	if err != nil {
+		panic(err)
+	}
 	fmt.Println(GetMonitorContentScale(m))
 
 	err = Terminate()
@@ -123,7 +139,10 @@ func TestGetMonitorName(t *testing.T) {
 		panic(err)
 	}
 
-	m := GetPrimaryMonitor()
+	m, err := GetPrimaryMonitor()
+	if err != nil {
+		panic(err)
+	}
 	fmt.Println(GetMonitorName(m))
 
 	err = Terminate()
@@ -139,11 +158,112 @@ func TestMonitorUserPointer(t *testing.T) {
 		panic(err)
 	}
 
-	m := GetPrimaryMonitor()
+	m, err := GetPrimaryMonitor()
+	if err != nil {
+		panic(err)
+	}
 	str := "awa"
-	SetMonitorUserPointer(m, unsafe.Pointer(&str))
-	strGet := GetMonitorUserPointer(m)
+	err = SetMonitorUserPointer(m, unsafe.Pointer(&str))
+	if err != nil {
+		panic(err)
+	}
+	strGet, err := GetMonitorUserPointer(m)
+	if err != nil {
+		panic(err)
+	}
 	fmt.Println(*(*string)(strGet))
+
+	err = Terminate()
+	if err != nil {
+		panic(err)
+	}
+}
+
+func TestGetVideoModes(t *testing.T) {
+	var err error
+	err = Init()
+	if err != nil {
+		panic(err)
+	}
+
+	go func() {
+		m, err := GetPrimaryMonitor()
+		if err != nil {
+			panic(err)
+		}
+		fmt.Println(GetVideoModes(m))
+	}()
+	time.Sleep(time.Second)
+
+	err = Terminate()
+	if err != nil {
+		panic(err)
+	}
+}
+
+func TestGetVideoMode(t *testing.T) {
+	var err error
+	err = Init()
+	if err != nil {
+		panic(err)
+	}
+
+	m, err := GetPrimaryMonitor()
+	if err != nil {
+		panic(err)
+	}
+	fmt.Println(GetVideoMode(m))
+
+	err = Terminate()
+	if err != nil {
+		panic(err)
+	}
+}
+
+func TestSetGamma(t *testing.T) {
+	var err error
+	err = Init()
+	if err != nil {
+		panic(err)
+	}
+
+	m, err := GetPrimaryMonitor()
+	if err != nil {
+		panic(err)
+	}
+
+	err = SetGamma(m, 2.0)
+	if err != nil {
+		panic(err)
+	}
+
+	time.Sleep(time.Second)
+
+	err = SetGamma(m, 1.0)
+	if err != nil {
+		panic(err)
+	}
+
+	err = Terminate()
+	if err != nil {
+		panic(err)
+	}
+}
+
+func TestGammaRamp(t *testing.T) {
+	var err error
+	err = Init()
+	if err != nil {
+		panic(err)
+	}
+
+	m, err := GetPrimaryMonitor()
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Println(GetGammaRamp(m))
+	fmt.Println(SetGammaRamp(m, nil))
 
 	err = Terminate()
 	if err != nil {

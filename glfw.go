@@ -2,8 +2,10 @@ package glfw
 
 /*
 #include <GLFW/glfw3.h>
+#include <string.h>
 
 typedef const char cchar;
+typedef unsigned short ushort;
 
 extern void glfwErrorCallback(int, cchar*);
 extern void glfwMonitorCallback(GLFWmonitor*, int);
@@ -562,8 +564,9 @@ func Terminate() error {
 // InitHint
 // Sets the specified init hint to the desired value.
 // This function must only be called from the main thread.
-func InitHint(pHint, pValue int) {
+func InitHint(pHint, pValue int) error {
 	C.glfwInitHint(C.int(pHint), C.int(pValue))
+	return GetError()
 }
 
 // GetVersion
@@ -609,87 +612,88 @@ func SetErrorCallback(pErrorFunc ErrorFunc) {
 // GetMonitors
 // Returns the currently connected monitors.
 // This function must only be called from the main thread.
-func GetMonitors() []*Monitor {
+func GetMonitors() ([]*Monitor, error) {
 	var count C.int
 	monitorArray := (*[1 << 30]*C.GLFWmonitor)(unsafe.Pointer(C.glfwGetMonitors(&count)))
 	var monitors []*Monitor
 	for i := 0; i < int(count); i++ {
 		monitors = append(monitors, (*Monitor)(unsafe.Pointer(monitorArray[i])))
 	}
-	return monitors
+	return monitors, GetError()
 }
 
 // GetPrimaryMonitor
 // Returns the primary monitor.
 // This function must only be called from the main thread.
-func GetPrimaryMonitor() *Monitor {
-	return (*Monitor)(unsafe.Pointer(C.glfwGetPrimaryMonitor()))
+func GetPrimaryMonitor() (*Monitor, error) {
+	return (*Monitor)(unsafe.Pointer(C.glfwGetPrimaryMonitor())), GetError()
 }
 
 // GetMonitorPos
 // Returns the position of the monitor's viewport on the virtual screen.
 // This function must only be called from the main thread.
-func GetMonitorPos(pMonitor *Monitor) (int, int) {
+func GetMonitorPos(pMonitor *Monitor) (int, int, error) {
 	var xPos, yPos C.int
 	C.glfwGetMonitorPos((*C.GLFWmonitor)(unsafe.Pointer(pMonitor)), &xPos, &yPos)
-	return int(xPos), int(yPos)
+	return int(xPos), int(yPos), GetError()
 }
 
 // GetMonitorWorkArea
 // Retrieves the work area of the monitor.
 // This function must only be called from the main thread.
-func GetMonitorWorkArea(pMonitor *Monitor) (int, int, int, int) {
+func GetMonitorWorkArea(pMonitor *Monitor) (int, int, int, int, error) {
 	var xPos, yPos, width, height C.int
 	C.glfwGetMonitorWorkarea(
 		(*C.GLFWmonitor)(unsafe.Pointer(pMonitor)),
 		&xPos, &yPos, &width, &height,
 	)
-	return int(xPos), int(yPos), int(width), int(height)
+	return int(xPos), int(yPos), int(width), int(height), GetError()
 }
 
 // GetMonitorPhysicalSize
 // Returns the physical size of the monitor.
 // This function must only be called from the main thread.
-func GetMonitorPhysicalSize(pMonitor *Monitor) (int, int) {
+func GetMonitorPhysicalSize(pMonitor *Monitor) (int, int, error) {
 	var width, height C.int
 	C.glfwGetMonitorPhysicalSize(
 		(*C.GLFWmonitor)(unsafe.Pointer(pMonitor)),
 		&width, &height,
 	)
-	return int(width), int(height)
+	return int(width), int(height), GetError()
 }
 
 // GetMonitorContentScale
 // Retrieves the content scale for the specified monitor.
 // This function must only be called from the main thread.
-func GetMonitorContentScale(pMonitor *Monitor) (float32, float32) {
+func GetMonitorContentScale(pMonitor *Monitor) (float32, float32, error) {
 	var xScale, yScale C.float
 	C.glfwGetMonitorContentScale(
 		(*C.GLFWmonitor)(unsafe.Pointer(pMonitor)),
 		&xScale, &yScale,
 	)
-	return float32(xScale), float32(yScale)
+	return float32(xScale), float32(yScale), GetError()
 }
 
 // GetMonitorName
 // Returns the name of the specified monitor.
 // This function must only be called from the main thread.
-func GetMonitorName(pMonitor *Monitor) string {
-	return C.GoString(C.glfwGetMonitorName((*C.GLFWmonitor)(unsafe.Pointer(pMonitor))))
+func GetMonitorName(pMonitor *Monitor) (string, error) {
+	return C.GoString(C.glfwGetMonitorName((*C.GLFWmonitor)(unsafe.Pointer(pMonitor)))), GetError()
 }
 
 // SetMonitorUserPointer
 // Sets the user pointer of the specified monitor.
 // This function may be called from any thread.  Access is not synchronized.
-func SetMonitorUserPointer(pMonitor *Monitor, pPtr unsafe.Pointer) {
+func SetMonitorUserPointer(pMonitor *Monitor, pPtr unsafe.Pointer) error {
 	C.glfwSetMonitorUserPointer((*C.GLFWmonitor)(unsafe.Pointer(pMonitor)), pPtr)
+	return GetError()
 }
 
 // GetMonitorUserPointer
 // Returns the user pointer of the specified monitor.
 // This function may be called from any thread.  Access is not synchronized.
-func GetMonitorUserPointer(pMonitor *Monitor) unsafe.Pointer {
-	return C.glfwGetMonitorUserPointer((*C.GLFWmonitor)(unsafe.Pointer(pMonitor)))
+func GetMonitorUserPointer(pMonitor *Monitor) (unsafe.Pointer, error) {
+	return C.glfwGetMonitorUserPointer((*C.GLFWmonitor)(unsafe.Pointer(pMonitor))), GetError()
 }
 
 var monitorFuncInstance MonitorFunc = nil
@@ -702,7 +706,83 @@ func glfwMonitorCallback(pMonitor *C.GLFWmonitor, pEvent C.int) {
 // SetMonitorCallback
 // Sets the monitor configuration callback.
 // This function must only be called from the main thread.
-func SetMonitorCallback(pMonitorFunc MonitorFunc) {
+func SetMonitorCallback(pMonitorFunc MonitorFunc) error {
 	monitorFuncInstance = pMonitorFunc
 	C.glfwSetMonitorCallback(C.GLFWmonitorfun(C.glfwMonitorCallback))
+	return GetError()
+}
+
+// GetVideoModes
+// Returns the available video modes for the specified monitor.
+// This function must only be called from the main thread.
+func GetVideoModes(pMonitor *Monitor) ([]VIMode, error) {
+	var count C.int
+	cVia := (*[1 << 30]C.GLFWvidmode)(
+		unsafe.Pointer(C.glfwGetVideoModes((*C.GLFWmonitor)(unsafe.Pointer(pMonitor)), &count)))
+	var via []VIMode
+	for i := 0; i < int(count); i++ {
+		vi := VIMode{
+			Width:       int(cVia[i].width),
+			Height:      int(cVia[i].height),
+			RedBits:     int(cVia[i].redBits),
+			GreenBits:   int(cVia[i].greenBits),
+			BlueBits:    int(cVia[i].blueBits),
+			RefreshRate: int(cVia[i].refreshRate),
+		}
+		via = append(via, vi)
+	}
+	return via, GetError()
+}
+
+// GetVideoMode
+// Returns the current mode of the specified monitor.
+// This function must only be called from the main thread.
+func GetVideoMode(pMonitor *Monitor) (*VIMode, error) {
+	cvi := C.glfwGetVideoMode((*C.GLFWmonitor)(unsafe.Pointer(pMonitor)))
+	if unsafe.Pointer(cvi) == C.NULL {
+		return nil, GetError()
+	}
+	return &VIMode{
+		Width:       int(cvi.width),
+		Height:      int(cvi.height),
+		RedBits:     int(cvi.redBits),
+		GreenBits:   int(cvi.greenBits),
+		BlueBits:    int(cvi.blueBits),
+		RefreshRate: int(cvi.refreshRate),
+	}, nil
+}
+
+// SetGamma
+// Generates a gamma ramp and sets it for the specified monitor.
+// This function must only be called from the main thread.
+func SetGamma(pMonitor *Monitor, pGamma float32) error {
+	C.glfwSetGamma((*C.GLFWmonitor)(unsafe.Pointer(pMonitor)), C.float(pGamma))
+	return GetError()
+}
+
+// GetGammaRamp
+// Returns the current gamma ramp for the specified monitor.
+// This function must only be called from the main thread.
+func GetGammaRamp(pMonitor *Monitor) (*GammaRamp, error) {
+	cgr := C.glfwGetGammaRamp((*C.GLFWmonitor)(unsafe.Pointer(pMonitor)))
+	if unsafe.Pointer(cgr) == C.NULL {
+		return nil, GetError()
+	}
+	gr := &GammaRamp{}
+	gr.Size = uint(cgr.size)
+	for i := 0; i < int(gr.Size); i++ {
+		gr.Red = append(gr.Red, uint16((*[1 << 30]C.ushort)(unsafe.Pointer(cgr.red))[i]))
+		gr.Green = append(gr.Green, uint16((*[1 << 30]C.ushort)(unsafe.Pointer(cgr.green))[i]))
+		gr.Blue = append(gr.Blue, uint16((*[1 << 30]C.ushort)(unsafe.Pointer(cgr.blue))[i]))
+	}
+	return gr, nil
+}
+
+// SetGammaRamp
+// NOT IMPLEMENTED!(摆烂)
+// Sets the current gamma ramp for the specified monitor.
+// This function must only be called from the main thread.
+func SetGammaRamp(pMonitor *Monitor, ramp *GammaRamp) error {
+	// HACK if you want to use it, you have to implement it yourself.
+	return errors.New("you have to implement it yourself")
 }
