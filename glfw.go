@@ -6,6 +6,7 @@ package glfw
 typedef const char cchar;
 
 extern void glfwErrorCallback(int, cchar*);
+extern void glfwMonitorCallback(GLFWmonitor*, int);
 */
 import "C"
 import (
@@ -675,4 +676,33 @@ func GetMonitorContentScale(pMonitor *Monitor) (float32, float32) {
 // This function must only be called from the main thread.
 func GetMonitorName(pMonitor *Monitor) string {
 	return C.GoString(C.glfwGetMonitorName((*C.GLFWmonitor)(unsafe.Pointer(pMonitor))))
+}
+
+// SetMonitorUserPointer
+// Sets the user pointer of the specified monitor.
+// This function may be called from any thread.  Access is not synchronized.
+func SetMonitorUserPointer(pMonitor *Monitor, pPtr unsafe.Pointer) {
+	C.glfwSetMonitorUserPointer((*C.GLFWmonitor)(unsafe.Pointer(pMonitor)), pPtr)
+}
+
+// GetMonitorUserPointer
+// Returns the user pointer of the specified monitor.
+// This function may be called from any thread.  Access is not synchronized.
+func GetMonitorUserPointer(pMonitor *Monitor) unsafe.Pointer {
+	return C.glfwGetMonitorUserPointer((*C.GLFWmonitor)(unsafe.Pointer(pMonitor)))
+}
+
+var monitorFuncInstance MonitorFunc = nil
+
+//export glfwMonitorCallback
+func glfwMonitorCallback(pMonitor *C.GLFWmonitor, pEvent C.int) {
+	monitorFuncInstance((*Monitor)(unsafe.Pointer(pMonitor)), int(pEvent))
+}
+
+// SetMonitorCallback
+// Sets the monitor configuration callback.
+// This function must only be called from the main thread.
+func SetMonitorCallback(pMonitorFunc MonitorFunc) {
+	monitorFuncInstance = pMonitorFunc
+	C.glfwSetMonitorCallback(C.GLFWmonitorfun(C.glfwMonitorCallback))
 }

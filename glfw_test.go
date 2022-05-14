@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"runtime"
 	"testing"
+	"unsafe"
 )
 
 func init() {
@@ -124,6 +125,25 @@ func TestGetMonitorName(t *testing.T) {
 
 	m := GetPrimaryMonitor()
 	fmt.Println(GetMonitorName(m))
+
+	err = Terminate()
+	if err != nil {
+		panic(err)
+	}
+}
+
+func TestMonitorUserPointer(t *testing.T) {
+	var err error
+	err = Init()
+	if err != nil {
+		panic(err)
+	}
+
+	m := GetPrimaryMonitor()
+	str := "awa"
+	SetMonitorUserPointer(m, unsafe.Pointer(&str))
+	strGet := GetMonitorUserPointer(m)
+	fmt.Println(*(*string)(strGet))
 
 	err = Terminate()
 	if err != nil {
