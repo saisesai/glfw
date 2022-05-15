@@ -2,6 +2,7 @@ package glfw
 
 /*
 #include <GLFW/glfw3.h>
+#include <stdlib.h>
 #include <string.h>
 
 typedef const char cchar;
@@ -785,4 +786,30 @@ func GetGammaRamp(pMonitor *Monitor) (*GammaRamp, error) {
 func SetGammaRamp(pMonitor *Monitor, ramp *GammaRamp) error {
 	// HACK if you want to use it, you have to implement it yourself.
 	return errors.New("you have to implement it yourself")
+}
+
+// DefaultWindowHints
+// Resets all window hints to their default values.
+// This function must only be called from the main thread.
+func DefaultWindowHints() error {
+	C.glfwDefaultWindowHints()
+	return GetError()
+}
+
+// WindowHint
+// Sets the specified window hint to the desired value.
+// This function must only be called from the main thread.
+func WindowHint(pHint, pValue int) error {
+	C.glfwWindowHint(C.int(pHint), C.int(pValue))
+	return GetError()
+}
+
+// WindowHintString
+// Sets the specified window hint to the desired value.
+// This function must only be called from the main thread.
+func WindowHintString(pHint int, pValue string) error {
+	cv := C.CString(pValue)
+	C.glfwWindowHintString(C.int(pHint), cv)
+	C.free(unsafe.Pointer(cv))
+	return GetError()
 }
