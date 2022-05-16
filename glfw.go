@@ -813,3 +813,67 @@ func WindowHintString(pHint int, pValue string) error {
 	C.free(unsafe.Pointer(cv))
 	return GetError()
 }
+
+// CreateWindow
+// Creates a window and its associated context.
+// This function must only be called from the main thread.
+func CreateWindow(pWidth, pHeight int, pTitle string, pMonitor *Monitor, pShare *Window) (*Window, error) {
+	ct := C.CString(pTitle)
+	cw := unsafe.Pointer(C.glfwCreateWindow(
+		C.int(pWidth), C.int(pHeight), ct,
+		(*C.GLFWmonitor)(unsafe.Pointer(pMonitor)),
+		(*C.GLFWwindow)(unsafe.Pointer(pShare)),
+	))
+	if cw == C.NULL {
+		return nil, GetError()
+	}
+	C.free(unsafe.Pointer(ct))
+	return (*Window)(cw), nil
+}
+
+// DestroyWindow
+// Destroys the specified window and its context.
+// This function must only be called from the main thread.
+func DestroyWindow(pWindow *Window) error {
+	C.glfwDestroyWindow((*C.GLFWwindow)(unsafe.Pointer(pWindow)))
+	return GetError()
+}
+
+// WindowShouldClose
+// Checks the close flag of the specified window.
+// This function may be called from any thread.  Access is not synchronized.
+func WindowShouldClose(pWindow *Window) bool {
+	return C.glfwWindowShouldClose((*C.GLFWwindow)(unsafe.Pointer(pWindow))) == C.GLFW_TRUE
+}
+
+// PollEvents
+// Processes all pending events.
+// This function must only be called from the main thread.
+func PollEvents() error {
+	C.glfwPollEvents()
+	return GetError()
+}
+
+// MakeContextCurrent
+// Makes the context of the specified window current for the calling thread.
+// This function may be called from any thread.
+func MakeContextCurrent(pWindow *Window) error {
+	C.glfwMakeContextCurrent((*C.GLFWwindow)(unsafe.Pointer(pWindow)))
+	return GetError()
+}
+
+// SwapInterval
+// Sets the swap interval for the current context.
+// This function may be called from any thread.
+func SwapInterval(pInterval int) error {
+	C.glfwSwapInterval(C.int(pInterval))
+	return GetError()
+}
+
+// SwapBuffers
+// Swaps the front and back buffers of the specified window.
+// This function may be called from any thread.
+func SwapBuffers(pWindow *Window) error {
+	C.glfwSwapBuffers((*C.GLFWwindow)(unsafe.Pointer(pWindow)))
+	return GetError()
+}

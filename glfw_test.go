@@ -270,3 +270,53 @@ func TestGammaRamp(t *testing.T) {
 		panic(err)
 	}
 }
+
+func TestWindow(t *testing.T) {
+	var err error
+	err = Init()
+	if err != nil {
+		panic(err)
+	}
+
+	err = DefaultWindowHints()
+	if err != nil {
+		panic(err)
+	}
+
+	w, err := CreateWindow(1280, 720, "test", nil, nil)
+	if err != nil {
+		panic(err)
+	}
+
+	err = MakeContextCurrent(w)
+	if err != nil {
+		panic(err)
+	}
+
+	err = SwapInterval(1)
+	if err != nil {
+		panic(err)
+	}
+
+	for !WindowShouldClose(w) {
+
+		err = SwapBuffers(w)
+		if err != nil {
+			panic(err)
+		}
+		err = PollEvents()
+		if err != nil {
+			panic(err)
+		}
+	}
+
+	err = DestroyWindow(w)
+	if err != nil {
+		panic(err)
+	}
+
+	err = Terminate()
+	if err != nil {
+		panic(err)
+	}
+}
