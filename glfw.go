@@ -846,6 +846,86 @@ func WindowShouldClose(pWindow *Window) bool {
 	return C.glfwWindowShouldClose((*C.GLFWwindow)(unsafe.Pointer(pWindow))) == C.GLFW_TRUE
 }
 
+// SetWindowShouldClose
+// Sets the close flag of the specified window.
+// This function may be called from any thread.  Access is not synchronized.
+func SetWindowShouldClose(pWindow *Window, pValue bool) error {
+	var value C.int = C.GLFW_FALSE
+	if pValue {
+		value = C.GLFW_TRUE
+	}
+	C.glfwSetWindowShouldClose((*C.GLFWwindow)(unsafe.Pointer(pWindow)), value)
+	return GetError()
+}
+
+// SetWindowTitle
+// Sets the title of the specified window.
+// This function must only be called from the main thread.
+func SetWindowTitle(pWindow *Window, pTitle string) error {
+	cTitle := C.CString(pTitle)
+	C.glfwSetWindowTitle((*C.GLFWwindow)(unsafe.Pointer(pWindow)), cTitle)
+	C.free(unsafe.Pointer(cTitle))
+	return GetError()
+}
+
+// SetWindowIcon
+// Sets the icon for the specified window.
+// This function must only be called from the main thread.
+func SetWindowIcon(pWindow *Window, pCount int, pImages *Image) error {
+	C.glfwSetWindowIcon((*C.GLFWwindow)(unsafe.Pointer(pWindow)), C.int(pCount), (*C.GLFWimage)(unsafe.Pointer(pImages)))
+	return GetError()
+}
+
+// GetWindowPos
+// Retrieves the position of the content area of the specified window.
+// This function must only be called from the main thread.
+func GetWindowPos(pWindow *Window) (int, int, error) {
+	var x, y C.int
+	C.glfwGetWindowPos((*C.GLFWwindow)(unsafe.Pointer(pWindow)), &x, &y)
+	return int(x), int(y), GetError()
+}
+
+// SetWindowPos
+// Sets the position of the content area of the specified window.
+// This function must only be called from the main thread.
+func SetWindowPos(pWindow *Window, pXPos, pYPos int) error {
+	C.glfwSetWindowPos((*C.GLFWwindow)(unsafe.Pointer(pWindow)), C.int(pXPos), C.int(pYPos))
+	return GetError()
+}
+
+// GetWindowSize
+// Retrieves the size of the content area of the specified window.
+// This function must only be called from the main thread.
+func GetWindowSize(pWindow *Window) (int, int, error) {
+	var w, h C.int
+	C.glfwGetWindowSize((*C.GLFWwindow)(unsafe.Pointer(pWindow)), &w, &h)
+	return int(w), int(h), GetError()
+}
+
+// SetWindowSizeLimits
+// Sets the size limits of the specified window.
+// This function must only be called from the main thread.
+func SetWindowSizeLimits(pWindow *Window, pMinWidth, pMinHeight, pMaxWidth, pMaxHeight int) error {
+	C.glfwSetWindowSizeLimits((*C.GLFWwindow)(unsafe.Pointer(pWindow)), C.int(pMinWidth), C.int(pMinHeight), C.int(pMaxWidth), C.int(pMaxHeight))
+	return GetError()
+}
+
+// SetWindowAspectRatio
+// Sets the aspect ratio of the specified window.
+// This function must only be called from the main thread.
+func SetWindowAspectRatio(pWindow *Window, pWidth, pHeight int) error {
+	C.glfwSetWindowAspectRatio((*C.GLFWwindow)(unsafe.Pointer(pWindow)), C.int(pWidth), C.int(pHeight))
+	return GetError()
+}
+
+// SetWindowSize
+// Sets the size of the content area of the specified window.
+// This function must only be called from the main thread.
+func SetWindowSize(pWindow *Window, pWidth, pHeight int) error {
+	C.glfwSetWindowSize((*C.GLFWwindow)(unsafe.Pointer(pWindow)), C.int(pWidth), C.int(pHeight))
+	return GetError()
+}
+
 // PollEvents
 // Processes all pending events.
 // This function must only be called from the main thread.

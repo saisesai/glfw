@@ -288,6 +288,18 @@ func TestWindow(t *testing.T) {
 		panic(err)
 	}
 
+	fmt.Println(GetWindowPos(w))
+	fmt.Println(SetWindowPos(w, 300, 300))
+	fmt.Println(GetWindowSize(w))
+	fmt.Println(SetWindowSizeLimits(w, 300, 300, 1280, 720))
+	fmt.Println(SetWindowAspectRatio(w, 1280, 720))
+	fmt.Println(SetWindowSize(w, 888, 500))
+
+	err = SetWindowTitle(w, "awa")
+	if err != nil {
+		panic(err)
+	}
+
 	err = MakeContextCurrent(w)
 	if err != nil {
 		panic(err)
